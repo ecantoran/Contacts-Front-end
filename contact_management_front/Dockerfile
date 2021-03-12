@@ -6,7 +6,7 @@ WORKDIR /src/
 # Install dependencies
 ADD package.json /src/
 
-RUN npm install
+# RUN npm install
 
 # Add rest of the client code
 ADD . /src/

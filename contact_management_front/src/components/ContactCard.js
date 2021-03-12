@@ -54,7 +54,8 @@ class ContactCard extends React.Component{
     };
 
     render() {
-        const { classes, contact, deleteContact, index } = this.props;
+        const { classes, contact, deleteContact, updateContact, index } = this.props;
+
         return (
             <div className={classes.root}>
                 <Paper className={classes.paper}>
@@ -69,10 +70,10 @@ class ContactCard extends React.Component{
                             <Grid item xs container direction="column" spacing={2}>
                                 <Grid item xs>
                                     <Typography gutterBottom variant="subtitle1">
-                                        {contact.name}
+                                        {contact.nombre} {contact.apellido}
                                     </Typography>
                                     <Typography variant="body2" gutterBottom>
-                                        {contact.phone}
+                                        {contact.telefono}
                                     </Typography>
                                     <Typography variant="body2" color="textSecondary">
                                         {contact.email}
@@ -102,12 +103,12 @@ class ContactCard extends React.Component{
                                 </Grid>
                             </Grid>
                             <Grid item>
-                                <Typography variant="subtitle1">{contact.created_at}</Typography>
+                                <Typography variant="subtitle1">{(new Date(contact.created_at)).toLocaleDateString()}</Typography>
                             </Grid>
                         </Grid>
                     </Grid>
                 </Paper>
-                <ContactDialog open={this.state.open} handleClose={this.handleClose} contact={contact}/>
+                <ContactDialog open={this.state.open} handleClose={this.handleClose} updateContact={updateContact} contact={contact} />
             </div>
         );
     }

@@ -4,61 +4,128 @@ import ContactCard from '../components/ContactCard';
 import Box from '@material-ui/core/Box';
 import AddButton from "../components/AddButton";
 import ContactDialog from "../components/ContactDialog";
+import axios from 'axios';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
-export default class ContactsGrid extends React.Component{
+const contactUrl = 'http://localhost:4000/api/contacts';
+
+export default class ContactsGrid extends React.Component {
+
     constructor(props) {
         super(props);
-        const contacts = [];
-        for (let i = 0; i < 10; i++) {
-            contacts.push({
-                id: i,
-                name: "Jonh",
-                last_name: "Doe",
-                email: i +"@contact.com",
-                phone: "5555555"+i,
-                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTB8fHVzZXIlMjBwcm9maWxlfGVufDB8fDB8&ixlib=rb-1.2.1&w=1000&q=80",
-                craeted_at: "Today"
-            });
-        }
+
         this.state = {
             open: false,
-            contacts
+            contacts: [],
+            error: false,
+            message:"",
         };
 
         this.handleClickOpen = this.handleClickOpen.bind(this);
         this.handleClose = this.handleClose.bind(this);
         this.addContact = this.addContact.bind(this);
         this.deleteContact = this.deleteContact.bind(this);
-
+        this.updateContact = this.updateContact.bind(this);
 
     }
-    handleClickOpen () {
+
+    componentDidMount() {
+        axios.get(contactUrl)
+            .then(res => {
+                const contacts = res.data.data;
+
+                this.setState({contacts: contacts});
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+
+    }
+
+
+    handleClickOpen() {
         this.setState({open: true})
     };
-    handleClose()  {
+
+    handleClose() {
         this.setState({open: false})
     };
-    addContact(){
-        const contacts = this.state.contacts;
-        let id = contacts.length;
-        contacts.push({
-            id: id,
-            name: "Jonh",
-            last_name: "Doe",
-            email: id +"@contact.com",
-            phone: "5555555"+ id,
-            avatar: "https://www.bnl.gov/today/body_pics/2017/06/stephanhruszkewycz-hr.jpg",
-            craeted_at: "Today"
-        })
-        this.setState(contacts);
-    }
-    deleteContact(index){
-        const contacts = this.state.contacts;
-        if (index !== -1){
-            contacts.splice(index, 1);
-            this.setState(contacts);
+
+    handleSnackClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
         }
+
+        this.setState({
+            error: false
+        });
+    };
+
+    addContact(contact) {
+
+        axios.post(contactUrl, contact)
+            .then(res => {
+                const new_contact = res.data.data;
+                const contacts = this.state.contacts;
+                contacts.push(new_contact);
+                this.setState(contacts)
+            })
+            .catch((error) => {
+                console.log(error);
+                this.setState({
+                    error: true,
+                    message: error.response.data.message
+                });
+            });
+        this.handleClose()
+    }
+
+    deleteContact(index) {
+        const contact = this.state.contacts[index];
+        axios.delete(contactUrl + "/" + contact.id).then(res => {
+            const contacts = this.state.contacts;
+            if (index !== -1) {
+                contacts.splice(index, 1);
+                this.setState(contacts);
+            }
+        })
+            .catch((error) => {
+                console.log(error)
+                this.setState({
+                    error: true,
+                    message: "Ups! An error ocurred."
+                });
+            })
+
+    }
+
+    updateContact(data) {
+
+        const {contact} = data
+        const {nombre, apellido, email, telefono, avatar} = data;
+        console.log()
+        axios.put(contactUrl + "/" + contact.id, {
+            nombre, apellido, email, telefono, avatar
+        }).then(res => {
+            console.log("Actualizado")
+            const contact = res.data.data;
+            this.setState(prevState => ({
+                contacts: prevState.contacts.map(el => el.id === contact.id ? contact : el)
+            }))
+        })
+            .catch((error) => {
+
+                this.setState({
+                    error: true,
+                    message: error.response.data.message
+                });
+            });
+        this.handleClose();
     }
 
     render() {
@@ -66,13 +133,14 @@ export default class ContactsGrid extends React.Component{
         return (
 
             <Box mx="auto" bgcolor="background.paper" p={1}>
-                <div >
+                <div>
                     <Grid container spacing={1}>
                         <Grid container item xs={12} spacing={3}>
-                            { this.state.contacts.map((contact, index) =>(
+                            {this.state.contacts.map((contact, index) => (
 
                                 < Grid item xs={4}>
-                                    <ContactCard contact={contact} deleteContact={this.deleteContact} index={index} children={index}/>
+                                    <ContactCard contact={contact} deleteContact={this.deleteContact}
+                                                 updateContact={this.updateContact} index={index} children={index}/>
                                 </Grid>
 
                             ))}
@@ -83,8 +151,12 @@ export default class ContactsGrid extends React.Component{
                 <div onClick={this.handleClickOpen}>
                     <AddButton/>
                 </div>
-
-                <ContactDialog open={this.state.open} handleClose={this.handleClose}/>
+                <ContactDialog open={this.state.open} handleClose={this.handleClose} addContact={this.addContact}/>
+                <Snackbar open={this.state.error} autoHideDuration={6000} onClose={this.handleSnackClose}>
+                    <Alert onClose={this.handleSnackClose} severity="error">
+                        {this.state.message}
+                    </Alert>
+                </Snackbar>
             </Box>
 
 
