@@ -14,7 +14,10 @@ function Alert(props) {
 
 const contactUrl = 'http://localhost:4000/api/contacts';
 
+
 export default class ContactsGrid extends React.Component {
+
+
 
     constructor(props) {
         super(props);
@@ -134,19 +137,24 @@ export default class ContactsGrid extends React.Component {
 
             <Box mx="auto" bgcolor="background.paper" p={1}>
                 <div>
-                    <Grid container spacing={1}>
-                        <Grid container item xs={12} spacing={3}>
-                            {this.state.contacts.map((contact, index) => (
+                    { this.state.contacts.length > 0 ?
+                        <Grid container spacing={1}>
+                            <Grid container item xs={12} spacing={3}>
+                                {this.state.contacts.map((contact, index) => (
 
-                                < Grid item xs={4}>
-                                    <ContactCard contact={contact} deleteContact={this.deleteContact}
-                                                 updateContact={this.updateContact} index={index} children={index}/>
-                                </Grid>
+                                    < Grid item xs={4}>
+                                        <ContactCard contact={contact} deleteContact={this.deleteContact}
+                                                     updateContact={this.updateContact} index={index} children={index}/>
+                                    </Grid>
 
-                            ))}
-                        </Grid>
+                                ))}
+                            </Grid>
 
-                    </Grid>
+                        </Grid> :
+
+                        <h1>You don't have contacts yet</h1>
+                    }
+
                 </div>
                 <div onClick={this.handleClickOpen}>
                     <AddButton/>
