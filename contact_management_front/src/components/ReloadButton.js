@@ -1,6 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import AddIcon from '@material-ui/icons/Add';
+import CachedIcon from '@material-ui/icons/Cached';
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip';
 
@@ -10,14 +10,14 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export default function AddButton() {
+export default function ReloadButton() {
     const classes = useStyles();
 
     return (
         <div>
-            <Tooltip title="Agregar Contacto" aria-label="add">
-                <Fab color="primary">
-                    <AddIcon />
+            <Tooltip title="Reload" aria-label="add">
+                <Fab>
+                    <CachedIcon />
                 </Fab>
             </Tooltip>
         </div>

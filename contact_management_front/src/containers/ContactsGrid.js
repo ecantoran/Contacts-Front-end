@@ -7,6 +7,9 @@ import ContactDialog from "../components/ContactDialog";
 import axios from 'axios';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import ReloadButton from '../components/ReloadButton';
+import {makeStyles, withStyles} from "@material-ui/core/styles";
+import PropTypes from "prop-types";
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -14,7 +17,18 @@ function Alert(props) {
 
 const contactUrl = 'http://localhost:4000/api/contacts';
 
-export default class ContactsGrid extends React.Component {
+const useStyles = theme => ({
+    absolute: {
+        position: 'absolute',
+        bottom: theme.spacing(2),
+        right: theme.spacing(3),
+    }
+});
+
+
+class ContactsGrid extends React.Component {
+
+
 
     constructor(props) {
         super(props);
@@ -31,6 +45,7 @@ export default class ContactsGrid extends React.Component {
         this.addContact = this.addContact.bind(this);
         this.deleteContact = this.deleteContact.bind(this);
         this.updateContact = this.updateContact.bind(this);
+        this.refreshPage = this.refreshPage.bind(this);
 
     }
 
@@ -43,6 +58,10 @@ export default class ContactsGrid extends React.Component {
             })
             .catch((error) => {
                 console.log(error)
+                this.setState({
+                    message:"Failed to connect to server.",
+                    error: true
+                })
             })
 
     }
@@ -66,6 +85,10 @@ export default class ContactsGrid extends React.Component {
         });
     };
 
+    refreshPage() {
+        window.location.reload(false);
+    }
+
     addContact(contact) {
 
         axios.post(contactUrl, contact)
@@ -76,11 +99,24 @@ export default class ContactsGrid extends React.Component {
                 this.setState(contacts)
             })
             .catch((error) => {
-                console.log(error);
-                this.setState({
-                    error: true,
-                    message: error.response.data.message
-                });
+                if (error.response) {
+                    this.setState({
+                        error: true,
+                        message: error.response.data.message
+                    });
+                }
+                else if (error.request) {
+                    this.setState({
+                        error: true,
+                        message: "Failed to connect to server."
+                    });
+                }
+                else{
+                    this.setState({
+                        error: true,
+                        message: error.message
+                    });
+                }
             });
         this.handleClose()
     }
@@ -120,37 +156,65 @@ export default class ContactsGrid extends React.Component {
         })
             .catch((error) => {
 
-                this.setState({
-                    error: true,
-                    message: error.response.data.message
-                });
+                if (error.response) {
+                    this.setState({
+                        error: true,
+                        message: error.response.data.message
+                    });
+                }
+                else if (error.request) {
+                    this.setState({
+                        error: true,
+                        message: "Failed to connect to server."
+                    });
+                }
+                else{
+                    this.setState({
+                        error: true,
+                        message: error.message
+                    });
+                }
             });
         this.handleClose();
     }
 
     render() {
+        const {classes} = this.props;
 
         return (
 
             <Box mx="auto" bgcolor="background.paper" p={1}>
                 <div>
-                    <Grid container spacing={1}>
-                        <Grid container item xs={12} spacing={3}>
-                            {this.state.contacts.map((contact, index) => (
+                    { this.state.contacts.length > 0 ?
+                        <Grid container spacing={1}>
+                            <Grid container item xs={12} spacing={3}>
+                                {this.state.contacts.map((contact, index) => (
 
-                                < Grid item xs={4}>
-                                    <ContactCard contact={contact} deleteContact={this.deleteContact}
-                                                 updateContact={this.updateContact} index={index} children={index}/>
-                                </Grid>
+                                    < Grid item xs={4}>
+                                        <ContactCard contact={contact} deleteContact={this.deleteContact}
+                                                     updateContact={this.updateContact} index={index} children={index}/>
+                                    </Grid>
 
-                            ))}
-                        </Grid>
+                                ))}
+                            </Grid>
 
-                    </Grid>
+                        </Grid> :
+
+                        <h1>You don't have contacts yet</h1>
+                    }
+
                 </div>
-                <div onClick={this.handleClickOpen}>
-                    <AddButton/>
+                <div className={classes.absolute}>
+                    <div onClick={this.refreshPage}>
+                        <ReloadButton/>
+                    </div>
+                    <div onClick={this.handleClickOpen}>
+                        <AddButton/>
+                    </div>
                 </div>
+
+
+
                 <ContactDialog open={this.state.open} handleClose={this.handleClose} addContact={this.addContact}/>
                 <Snackbar open={this.state.error} autoHideDuration={6000} onClose={this.handleSnackClose}>
                     <Alert onClose={this.handleSnackClose} severity="error">
@@ -163,3 +227,9 @@ export default class ContactsGrid extends React.Component {
         );
     }
 }
+
+ContactsGrid.propTypes = {
+    classes: PropTypes.object.isRequired,
+}
+
+export default withStyles(useStyles) (ContactsGrid);
