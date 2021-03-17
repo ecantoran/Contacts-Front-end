@@ -46,6 +46,10 @@ export default class ContactsGrid extends React.Component {
             })
             .catch((error) => {
                 console.log(error)
+                this.setState({
+                    message:"Failed to connect to server.",
+                    error: true
+                })
             })
 
     }
@@ -79,11 +83,24 @@ export default class ContactsGrid extends React.Component {
                 this.setState(contacts)
             })
             .catch((error) => {
-                console.log(error);
-                this.setState({
-                    error: true,
-                    message: error.response.data.message
-                });
+                if (error.response) {
+                    this.setState({
+                        error: true,
+                        message: error.response.data.message
+                    });
+                }
+                else if (error.request) {
+                    this.setState({
+                        error: true,
+                        message: "Failed to connect to server."
+                    });
+                }
+                else{
+                    this.setState({
+                        error: true,
+                        message: error.message
+                    });
+                }
             });
         this.handleClose()
     }
@@ -123,10 +140,24 @@ export default class ContactsGrid extends React.Component {
         })
             .catch((error) => {
 
-                this.setState({
-                    error: true,
-                    message: error.response.data.message
-                });
+                if (error.response) {
+                    this.setState({
+                        error: true,
+                        message: error.response.data.message
+                    });
+                }
+                else if (error.request) {
+                    this.setState({
+                        error: true,
+                        message: "Failed to connect to server."
+                    });
+                }
+                else{
+                    this.setState({
+                        error: true,
+                        message: error.message
+                    });
+                }
             });
         this.handleClose();
     }
