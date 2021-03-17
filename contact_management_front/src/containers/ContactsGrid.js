@@ -7,6 +7,9 @@ import ContactDialog from "../components/ContactDialog";
 import axios from 'axios';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import ReloadButton from '../components/ReloadButton';
+import {makeStyles, withStyles} from "@material-ui/core/styles";
+import PropTypes from "prop-types";
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -14,8 +17,16 @@ function Alert(props) {
 
 const contactUrl = 'http://localhost:4000/api/contacts';
 
+const useStyles = theme => ({
+    absolute: {
+        position: 'absolute',
+        bottom: theme.spacing(2),
+        right: theme.spacing(3),
+    }
+});
 
-export default class ContactsGrid extends React.Component {
+
+class ContactsGrid extends React.Component {
 
 
 
@@ -34,6 +45,7 @@ export default class ContactsGrid extends React.Component {
         this.addContact = this.addContact.bind(this);
         this.deleteContact = this.deleteContact.bind(this);
         this.updateContact = this.updateContact.bind(this);
+        this.refreshPage = this.refreshPage.bind(this);
 
     }
 
@@ -72,6 +84,10 @@ export default class ContactsGrid extends React.Component {
             error: false
         });
     };
+
+    refreshPage() {
+        window.location.reload(false);
+    }
 
     addContact(contact) {
 
@@ -163,6 +179,7 @@ export default class ContactsGrid extends React.Component {
     }
 
     render() {
+        const {classes} = this.props;
 
         return (
 
@@ -187,9 +204,17 @@ export default class ContactsGrid extends React.Component {
                     }
 
                 </div>
-                <div onClick={this.handleClickOpen}>
-                    <AddButton/>
+                <div className={classes.absolute}>
+                    <div onClick={this.refreshPage}>
+                        <ReloadButton/>
+                    </div>
+                    <div onClick={this.handleClickOpen}>
+                        <AddButton/>
+                    </div>
                 </div>
+
+
+
                 <ContactDialog open={this.state.open} handleClose={this.handleClose} addContact={this.addContact}/>
                 <Snackbar open={this.state.error} autoHideDuration={6000} onClose={this.handleSnackClose}>
                     <Alert onClose={this.handleSnackClose} severity="error">
@@ -202,3 +227,9 @@ export default class ContactsGrid extends React.Component {
         );
     }
 }
+
+ContactsGrid.propTypes = {
+    classes: PropTypes.object.isRequired,
+}
+
+export default withStyles(useStyles) (ContactsGrid);
